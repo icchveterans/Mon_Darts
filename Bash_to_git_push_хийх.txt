@@ -1,0 +1,20 @@
+# 1. Төслийн бүх хуучин кэшийг компьютер дээрээсээ бүрэн цэвэрлэнэ (Маш чухал)
+flutter clean
+
+# 2. Сангуудыг шинээр татаж бүртгэнэ
+flutter pub get
+
+# 3. ШИНЭ ШИЙДЭЛ: Хоёр зураас биш, Гит Башийг хуурахын тулл урд нь MSYS тушаал залгаж ЗӨВ замаар угсарна
+MSYS_NO_PATHCONV=1 flutter build web --base-href "/Mon_Darts/" --release
+
+# 4. Шинэ цэвэрхэн файлыг гит-д хүчээр нэмнэ
+git add build/web -f
+
+# 5. Өөрчлөлтийг баталгаажуулж шошголно
+git commit -m "fix: path conversion using msys env"
+
+# 6. Вэб хавтасны ID-г зөв салгаж авна
+SHA=$(git subtree split --prefix build/web main)
+
+# 7. GitHub руу хүчээр шахаж илгээнэ
+git push origin $SHA:gh-pages --force
