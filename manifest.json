@@ -1,12 +1,12 @@
 {
-    "name": "dart_app",
-    "short_name": "dart_app",
+    "name": "МОН_ДАРТС",
+    "short_name": "МОН_ДАРТС",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
-    "orientation": "portrait-primary",
+    "background_color": "#16181F",
+    "theme_color": "#16181F",
+    "description": "Дартсын оноо тоолдог монгол аппликейшн",
+    "orientation": "portrait",
     "prefer_related_applications": false,
     "icons": [
         {
