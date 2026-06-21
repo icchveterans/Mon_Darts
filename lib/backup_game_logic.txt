@@ -12,7 +12,7 @@ class DartGame {
   String currentInput = "";
 
   String player1Name = "БУЖГАА";
-  String player2Name = "ТОГЛОГЧ 2";
+  String player2Name = "ЧӨДӨРӨӨ";
 
   int player1Legs = 0;
   int player2Legs = 0;

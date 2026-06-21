@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'game_logic.dart';
 import 'dart:ui';
+import 'package:flutter_tts/flutter_tts.dart';
 
 class GameScreen extends StatefulWidget {
   @override
@@ -8,6 +9,7 @@ class GameScreen extends StatefulWidget {
 }
 
 class _GameScreenState extends State<GameScreen> {
+  final DartsCaller _caller = DartsCaller();
   DartGame game = DartGame();
 
   @override
@@ -148,7 +150,7 @@ class _GameScreenState extends State<GameScreen> {
     @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF1E222D), 
+      backgroundColor: const Color(0xFFFFF9E6), 
       appBar: AppBar(
         title: const Text("МОНГОЛ ДАРТС", style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 2, fontSize: 18)),
         backgroundColor: Colors.green,
@@ -202,8 +204,8 @@ class _GameScreenState extends State<GameScreen> {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Color(0xFF282D3B), // Дээд хэсэг - үл ялиг цайвар хөх саарал туяа
-              Color(0xFF16181F), // Доод хэсэг - гүн харанхуй өнгө
+              Color(0xFF04471C), // Дээд хэсэг - үл ялиг цайвар хөх саарал туяа
+              Color(0xFF181F56), // Доод хэсэг - гүн харанхуй өнгө
             ],
           ),
         ),
@@ -271,32 +273,47 @@ class _GameScreenState extends State<GameScreen> {
                   ),
                   child: Column(
                     children: [
-                      GridView.count(
-                        crossAxisCount: 3,
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        childAspectRatio: 1.8,
-                        mainAxisSpacing: 10,
-                        crossAxisSpacing: 10,
-                        children: [
-                          for (var i = 1; i <= 9; i++)
-                            _buildNumButton(i.toString(), () => game.isVsAI && !game.isPlayer1Turn ? null : game.addDigit(i.toString())),
-                        ],
-                      ),
-                      const SizedBox(height: 10),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _buildNumButton("↩", () => game.undoLastMove(), isUndo: true)),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: _buildNumButton("❌", () => game.isVsAI && !game.isPlayer1Turn ? null : game.deleteDigit(), isAction: true)),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: _buildNumButton("0", () => game.isVsAI && !game.isPlayer1Turn ? null : game.addDigit("0"))),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: _buildNumButton("✔", () => game.isVsAI && !game.isPlayer1Turn ? null : _handleScoreSubmit(), isSubmit: true)),
+                    GridView.count(
+                      crossAxisCount: 3,
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      childAspectRatio: 1.8,
+                      mainAxisSpacing: 10,
+                      crossAxisSpacing: 10,
+                      children: [
+                        for (var i = 1; i <= 9; i++)
+                          _buildNumButton(i.toString(), () => game.isVsAI && !game.isPlayer1Turn ? null : game.addDigit(i.toString())),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _buildNumButton("↩", () => game.undoLastMove(), isUndo: true)),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: _buildNumButton("❌", () => game.isVsAI && !game.isPlayer1Turn ? null : game.deleteDigit(), isAction: true)),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: _buildNumButton("0", () => game.isVsAI && !game.isPlayer1Turn ? null : game.addDigit("0"))),
+                        const SizedBox(width: 10),
+                                                  // ЗӨВ (✔) ТОВЧЛУУР: Энд нийлбэр оноог зарлана
+                        Expanded(
+                          child: _buildNumButton("✔", () {
+                            if (game.isVsAI && !game.isPlayer1Turn) return;
+
+                            // 1. Хэрэглэгчийн дэлгэц дээр бичсэн байгаа нийлбэр оноог уншиж авна
+                            String totalScore = game.currentInput;
+
+                            // 2. Хэрэв оноо хоосон биш бол шүүгч чангаар зарлана
+                            if (totalScore.isNotEmpty) {
+                              _caller.speak(totalScore); 
+                            }
+
+                            // 3. Оноог системд хадгалж дараагийн тоглогчийн ээлж рүү шилжүүлнэ
+                            _handleScoreSubmit();
+                          }, isSubmit: true),
+                        ),
                         ],
                       ),
                     ],
@@ -495,5 +512,44 @@ class _GameScreenState extends State<GameScreen> {
         ),
       ),
     );
+  }
+}
+class DartsCaller {
+  final FlutterTts _flutterTts = FlutterTts();
+  
+  // Хэлэх ёстой тоонуудыг хадгалах дараалал (Жагсаалт)
+  final List<String> _speechQueue = [];
+  bool _isSpeaking = false; // Одоо дуугарч байгаа эсэхийг хянах нууц унтраалга
+
+  DartsCaller() {
+    _initTts();
+  }
+
+  void _initTts() {
+    _flutterTts.setLanguage("en-US"); // Англиар хэлбэл дартсын шүүгч шиг гоё сонсогдоно
+    _flutterTts.setSpeechRate(0.6);   // Хэлэх хурд (Үл ялиг удаашруулсан)
+    _flutterTts.setVolume(1.0);       // Дууны хэмжээ хамгийн чанга дээр
+
+    // Хамгийн чухал хэсэг: Нэг үг хэлж дуусахыг Гит системд мэдэгдэх ухаалаг холбоос
+    _flutterTts.setCompletionHandler(() {
+      _isSpeaking = false; 
+      _checkQueue(); // Үг хэлж дуусангуут дараагийн үг байгаа эсэхийг шалгана
+    });
+  }
+
+  // Товчлуур дарахад энэ функцийг дуудна
+  void speak(String text) {
+    _speechQueue.add(text); // Шинэ тоог шууд жагсаалтын төгсгөлд нэмнэ
+    if (!_isSpeaking) {
+      _checkQueue(); // Хэрэв апп одоогоор чимээгүй байвал шууд уншиж эхэлнэ
+    }
+  }
+
+  void _checkQueue() async {
+    if (_speechQueue.isEmpty) return; // Жагсаалт хоосон бол зогсоно
+
+    _isSpeaking = true;
+    String nextText = _speechQueue.removeAt(0); // Хамгийн эхний тоог сугалж авна
+    await _flutterTts.speak(nextText); // Түүнийгээ дуустал нь уншина
   }
 }

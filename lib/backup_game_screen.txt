@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'game_logic.dart';
-import 'package:fl_chart/fl_chart.dart';
 import 'dart:ui';
+import 'package:flutter_tts/flutter_tts.dart';
 
 class GameScreen extends StatefulWidget {
   @override
@@ -9,6 +9,7 @@ class GameScreen extends StatefulWidget {
 }
 
 class _GameScreenState extends State<GameScreen> {
+  final DartsCaller _caller = DartsCaller();
   DartGame game = DartGame();
 
   @override
@@ -146,7 +147,7 @@ class _GameScreenState extends State<GameScreen> {
     if (result == 'ai_thinking') _triggerAIPlay();
   }
 
-  @override
+    @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF1E222D), 
@@ -194,71 +195,84 @@ class _GameScreenState extends State<GameScreen> {
           )
         ],
       ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              const SizedBox(height: 15),
-              Text(
-                "ГОРИМ: ${game.startScore} — ТЭМЦЭЭН (${game.targetLegs} ХОЖИХ)",
-                style: const TextStyle(color: Colors.grey, fontSize: 13, fontWeight: FontWeight.bold, letterSpacing: 1),
-              ),
-              const SizedBox(height: 15),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  _buildPlayerCard(
-                    game.player1Name, 
-                    game.player1Score, 
-                    game.isPlayer1Turn, 
-                    game.getCheckoutGuide(true), 
-                    game.player1Legs, 
-                    game.getAverage(true), 
-                    game.getHighCount(true, 100), 
-                    game.getHighCount(true, 140),
-                    game.p1TotalMatchWins,
-                    game.p1BestAverage
-                  ),
-                  _buildPlayerCard(
-                    game.player2Name, 
-                    game.player2Score, 
-                    !game.isPlayer1Turn, 
-                    game.getCheckoutGuide(false), 
-                    game.player2Legs, 
-                    game.getAverage(false), 
-                    game.getHighCount(false, 100), 
-                    game.getHighCount(false, 140),
-                    game.p2TotalMatchWins,
-                    game.p2BestAverage
-                  ),
-                ],
-              ),
-              
-              const SizedBox(height: 10),
-              // ШИНЭ ТУШААЛ: Онооны картуудын доор графикийг шууд дуудав
-              _buildMatchChart(), 
-              const SizedBox(height: 10),
-              Container(
-                height: 50,
-                alignment: Alignment.center,
-                child: Text(
-                  game.currentInput.isEmpty && !game.isPlayer1Turn && game.isVsAI ? "РОБОТ БОДОЖ БАЙНА..." : (game.currentInput.isEmpty ? "ОНОО ОРУУЛНА УУ" : game.currentInput),
-                  style: TextStyle(
-                    fontSize: game.currentInput.isEmpty ? 18 : 36, 
-                    fontWeight: FontWeight.bold, 
-                    color: !game.isPlayer1Turn && game.isVsAI ? Colors.green : (game.currentInput.isEmpty ? Colors.grey : Colors.amber)
-                  ),
+      // БОЛОР ЭФФЕКТИЙГ ИДЭВХЖҮҮЛЭХ АРЫН УУСГАЛТТАЙ КОНТЕЙНЕР
+      body: Container(
+        width: double.infinity,
+        height: double.infinity,
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color(0xFF282D3B), // Дээд хэсэг - үл ялиг цайвар хөх саарал туяа
+              Color(0xFF16181F), // Доод хэсэг - гүн харанхуй өнгө
+            ],
+          ),
+        ),
+        child: SafeArea(
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                const SizedBox(height: 15),
+                Text(
+                  "ГОРИМ: ${game.startScore} — ТЭМЦЭЭН (${game.targetLegs} ХОЖИХ)",
+                  style: const TextStyle(color: Colors.grey, fontSize: 13, fontWeight: FontWeight.bold, letterSpacing: 1),
                 ),
-              ),
-              const SizedBox(height: 10),
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.35),
-                  borderRadius: const BorderRadius.only(topLeft: Radius.circular(30), topRight: Radius.circular(30)),
-                ),
-                child: Column(
+                const SizedBox(height: 15),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
+                    _buildPlayerCard(
+                      game.player1Name, 
+                      game.player1Score, 
+                      game.isPlayer1Turn, 
+                      game.getCheckoutGuide(true), 
+                      game.player1Legs, 
+                      game.getAverage(true), 
+                      game.getHighCount(true, 100), 
+                      game.getHighCount(true, 140),
+                      game.p1TotalMatchWins,
+                      game.p1BestAverage
+                    ),
+                    _buildPlayerCard(
+                      game.player2Name, 
+                      game.player2Score, 
+                      !game.isPlayer1Turn, 
+                      game.getCheckoutGuide(false), 
+                      game.player2Legs, 
+                      game.getAverage(false), 
+                      game.getHighCount(false, 100), 
+                      game.getHighCount(false, 140),
+                      game.p2TotalMatchWins,
+                      game.p2BestAverage
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                Container(
+                  height: 50,
+                  alignment: Alignment.center,
+                  child: Text(
+                    game.currentInput.isEmpty && !game.isPlayer1Turn && game.isVsAI ? "РОБОТ БОДОЖ БАЙНА..." : (game.currentInput.isEmpty ? "ОНОО ОРУУЛНА УУ" : game.currentInput),
+                    style: TextStyle(
+                      fontSize: game.currentInput.isEmpty ? 18 : 36, 
+                      fontWeight: FontWeight.bold, 
+                      color: !game.isPlayer1Turn && game.isVsAI ? Colors.green : (game.currentInput.isEmpty ? Colors.grey : Colors.amber)
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.02), 
+                    borderRadius: const BorderRadius.only(topLeft: Radius.circular(30), topRight: Radius.circular(30)),
+                    border: Border(
+                      top: BorderSide(color: Colors.white.withOpacity(0.08), width: 1),
+                    ),
+                  ),
+                  child: Column(
+                    children: [
                     GridView.count(
                       crossAxisCount: 3,
                       shrinkWrap: true,
@@ -276,67 +290,43 @@ class _GameScreenState extends State<GameScreen> {
                       children: [
                         Expanded(
                           child: _buildNumButton("↩", () => game.undoLastMove(), isUndo: true)),
-                          const SizedBox(width: 10),
-                            Expanded(
-                              child: _buildNumButton("❌", () => game.isVsAI && !game.isPlayer1Turn ? null : game.deleteDigit(), isAction: true)),
-                          const SizedBox(width: 10),
-                            Expanded(
-                              child: _buildNumButton("0", () => game.isVsAI && !game.isPlayer1Turn ? null : game.addDigit("0"))),
-                          const SizedBox(width: 10),
-                            Expanded(child: _buildNumButton("✔", () => game.isVsAI && !game.isPlayer1Turn ? null : _handleScoreSubmit(), isSubmit: true)),
-                          ],
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: _buildNumButton("❌", () => game.isVsAI && !game.isPlayer1Turn ? null : game.deleteDigit(), isAction: true)),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: _buildNumButton("0", () => game.isVsAI && !game.isPlayer1Turn ? null : game.addDigit("0"))),
+                        const SizedBox(width: 10),
+                                                  // ЗӨВ (✔) ТОВЧЛУУР: Энд нийлбэр оноог зарлана
+                        Expanded(
+                          child: _buildNumButton("✔", () {
+                            if (game.isVsAI && !game.isPlayer1Turn) return;
+
+                            // 1. Хэрэглэгчийн дэлгэц дээр бичсэн байгаа нийлбэр оноог уншиж авна
+                            String totalScore = game.currentInput;
+
+                            // 2. Хэрэв оноо хоосон биш бол шүүгч чангаар зарлана
+                            if (totalScore.isNotEmpty) {
+                              _caller.speak(totalScore); 
+                            }
+
+                            // 3. Оноог системд хадгалж дараагийн тоглогчийн ээлж рүү шилжүүлнэ
+                            _handleScoreSubmit();
+                          }, isSubmit: true),
                         ),
-                      ],
-                    ),
-                  )],
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
-              ),
+              ],
             ),
-          );
-        }
-  Widget _buildMatchChart() {
-    // Тоглогчдын онооны түүхийг графикад зориулж бэлдэх
-    List<FlSpot> p1Spots = [];
-    for (int i = 0; i < game.p1History.length; i++) {
-      p1Spots.add(FlSpot(i.toDouble(), game.p1History[i].toDouble()));
-    }
-
-    List<FlSpot> p2Spots = [];
-    for (int i = 0; i < game.p2History.length; i++) {
-      p2Spots.add(FlSpot(i.toDouble(), game.p2History[i].toDouble()));
-    }
-
-    return Container(
-      height: 80,
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-      child: LineChart(
-        LineChartData(
-          minY: 0,
-          maxY: 501,
-          lineTouchData: const LineTouchData(enabled: false),
-          gridData: const FlGridData(show: false),
-          titlesData: const FlTitlesData(show: false),
-          borderData: FlBorderData(show: false),
-          lineBarsData: [
-            LineChartBarData(
-              spots: p1Spots,
-              isCurved: true,
-              color: Colors.green,
-              barWidth: 3,
-              dotData: const FlDotData(show: false),
-            ),
-            LineChartBarData(
-              spots: p2Spots,
-              isCurved: true,
-              color: Colors.amber,
-              barWidth: 3,
-              dotData: const FlDotData(show: false),
-            ),
-          ],
+          ),
         ),
       ),
     );
   }
+
 
       Widget _buildPlayerCard(
         String name, 
@@ -422,66 +412,144 @@ class _GameScreenState extends State<GameScreen> {
         ),
       );
     }
- Widget _buildNumButton(
+   Widget _buildNumButton(
     String text, 
     VoidCallback? onTap, {
       bool isAction = false, 
       bool isSubmit = false, 
       bool isUndo = false}) {
     
-    // Суурь өнгөнүүдийг тунгалаг (withOpacity) болгож өөрчлөв
-    Color btnColor = Colors.white.withOpacity(0.15); // Энгийн товчлуур - тунгалаг цагаан
-    if (isAction) btnColor = Colors.red[900]!.withOpacity(0.3); // Устгах товч - тунгалаг улаан
-    if (isSubmit) btnColor = Colors.green[700]!.withOpacity(0.3); // Илүү тод ногоон
-    if (isUndo) btnColor = Colors.blueGrey[700]!.withOpacity(0.3); // Буцаах товч
+    // 1. Усны дусал шиг гялалзуулах өнгөний уусгалт (Gradient) бэлдэх
+    List<Color> gradientColors = [
+      Colors.white.withOpacity(0.18), // Дээд тал нь гэрэл ойсон тод
+      Colors.white.withOpacity(0.04), // Доод тал нь тунгалаг ууссан
+    ];
+    Color borderColor = Colors.white.withOpacity(0.35); // Дусал шиг гялалзах нарийн ирмэг
+    Color textColor = Colors.white.withOpacity(0.95);
 
-    // Товчлуур идэвхгүй үед илүү бүдгэрүүлэх
+    if (isAction) { // Улаан "❌" дусал
+      gradientColors = [Colors.red.withOpacity(0.3), Colors.red.withOpacity(0.08)];
+      borderColor = Colors.red.withOpacity(0.5);
+      textColor = Colors.red.shade100;
+    }
+    if (isSubmit) { // Ногоон "✔" дусал
+      gradientColors = [Colors.green.withOpacity(0.35), Colors.green.withOpacity(0.1)];
+      borderColor = Colors.green.withOpacity(0.6);
+      textColor = Colors.green.shade100;
+    }
+    if (isUndo) { // Цэнхэр саарал "↩" дусал
+      gradientColors = [Colors.blueGrey.withOpacity(0.3), Colors.blueGrey.withOpacity(0.08)];
+      borderColor = Colors.blueGrey.withOpacity(0.5);
+      textColor = Colors.blueGrey.shade100;
+    }
+
+    // Товчлуур идэвхгүй үед (Робот бодож байхад) дуслыг хатаах / бүдгэрүүлэх
     if (onTap == null) {
-      btnColor = btnColor.withOpacity(0.05);
+      gradientColors = [Colors.white.withOpacity(0.03), Colors.white.withOpacity(0.01)];
+      borderColor = Colors.white.withOpacity(0.08);
+      textColor = Colors.white.withOpacity(0.2);
     }
 
     return ClipRRect(
-      borderRadius: BorderRadius.circular(15), // Булангийн дугуйралт
+      borderRadius: BorderRadius.circular(22), // Усны дусал шиг илүү дугуй булантай болгоно
       child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10), // Ард талыг нь болор шиг бүрэлзүүлэх
+        filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
         child: Container(
           decoration: BoxDecoration(
-            color: btnColor,
-            borderRadius: BorderRadius.circular(15),
-            // Болор шиг харагдуулах нарийн цагаан хүрээ (Гэрэл ойж буй мэт)
-            border: Border.all(
-              color: Colors.white.withOpacity(0.2),
-              width: 1.5,
+            // Цул өнгө биш, Градиент ашиглан дээрээс нь туссан гэрэл үүсгэнэ
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: gradientColors,
             ),
+            borderRadius: BorderRadius.circular(22),
+            border: Border.all(
+              color: borderColor,
+              width: 1.3,
+            ),
+            // Дуслыг цаанаасаа товгор харагдуулах гэрлийн ойлт болон сүүдэр
+            boxShadow: [
+              BoxShadow(
+                color: Colors.white.withOpacity(0.1),
+                blurRadius: 2,
+                offset: const Offset(0, -2), // Дээд талын гэрэлтэлт
+              ),
+              BoxShadow(
+                color: Colors.black.withOpacity(0.15),
+                blurRadius: 6,
+                offset: const Offset(0, 3), // Доод талын зөөлөн сүүдэр
+              ),
+            ],
           ),
-          child: InkWell(
-            onHighlightChanged: null,
-            borderRadius: BorderRadius.circular(15),
-            onTap: onTap == null ? null : () => setState(onTap),
-            child: Container(
-              padding: const EdgeInsets.symmetric(vertical: 14),
-              alignment: Alignment.center,
-              child: Text(
-                text, 
-                style: TextStyle(
-                  fontSize: 22, 
-                  fontWeight: FontWeight.bold, 
-                  // Идэвхгүй үед текстийг бүдгэрүүлэх
-                  color: onTap == null ? Colors.white.withOpacity(0.4) : Colors.white,
-                  shadows: [
-                    // Текстийг илүү тод харагдуулах сүүдэр
-                    Shadow(
-                      blurRadius: 4,
-                      color: Colors.black.withOpacity(0.3),
-                      offset: const Offset(1, 1),
-                    )
-                  ]
-                )
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(22),
+              splashColor: textColor.withOpacity(0.2), // Дарахад усан дотор долгион үүсэх мэт
+              highlightColor: textColor.withOpacity(0.05),
+              onTap: onTap == null ? null : () => setState(onTap),
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                alignment: Alignment.center,
+                child: Text(
+                  text, 
+                  style: TextStyle(
+                    fontSize: 24, 
+                    fontWeight: FontWeight.bold, 
+                    color: textColor,
+                    shadows: [
+                      Shadow(
+                        blurRadius: 3,
+                        color: Colors.black.withOpacity(0.5),
+                        offset: const Offset(1, 15 / 10),
+                      )
+                    ]
+                  )
+                ),
               ),
             ),
           ),
         ),
       ),
     );
+  }
+}
+class DartsCaller {
+  final FlutterTts _flutterTts = FlutterTts();
+  
+  // Хэлэх ёстой тоонуудыг хадгалах дараалал (Жагсаалт)
+  final List<String> _speechQueue = [];
+  bool _isSpeaking = false; // Одоо дуугарч байгаа эсэхийг хянах нууц унтраалга
+
+  DartsCaller() {
+    _initTts();
+  }
+
+  void _initTts() {
+    _flutterTts.setLanguage("en-US"); // Англиар хэлбэл дартсын шүүгч шиг гоё сонсогдоно
+    _flutterTts.setSpeechRate(0.6);   // Хэлэх хурд (Үл ялиг удаашруулсан)
+    _flutterTts.setVolume(1.0);       // Дууны хэмжээ хамгийн чанга дээр
+
+    // Хамгийн чухал хэсэг: Нэг үг хэлж дуусахыг Гит системд мэдэгдэх ухаалаг холбоос
+    _flutterTts.setCompletionHandler(() {
+      _isSpeaking = false; 
+      _checkQueue(); // Үг хэлж дуусангуут дараагийн үг байгаа эсэхийг шалгана
+    });
+  }
+
+  // Товчлуур дарахад энэ функцийг дуудна
+  void speak(String text) {
+    _speechQueue.add(text); // Шинэ тоог шууд жагсаалтын төгсгөлд нэмнэ
+    if (!_isSpeaking) {
+      _checkQueue(); // Хэрэв апп одоогоор чимээгүй байвал шууд уншиж эхэлнэ
+    }
+  }
+
+  void _checkQueue() async {
+    if (_speechQueue.isEmpty) return; // Жагсаалт хоосон бол зогсоно
+
+    _isSpeaking = true;
+    String nextText = _speechQueue.removeAt(0); // Хамгийн эхний тоог сугалж авна
+    await _flutterTts.speak(nextText); // Түүнийгээ дуустал нь уншина
   }
 }
